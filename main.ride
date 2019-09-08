@@ -1,0 +1,70 @@
+{-# STDLIB_VERSION 3 #-}
+{-# CONTENT_TYPE DAPP #-}
+{-# SCRIPT_TYPE ACCOUNT #-}
+
+func signerIsAllowedToSign(voterPublicKey: ByteVector) = {
+
+let auditor1open = base58'6B7r4pWd3dB79ojogTFvQ2tspsav6gsL4iWqzsRG2rhR'
+let factory1open = base58'BGr3aRnHxWYKViZ9AKkqE7CdczJtRGk2vCzbGF5mX7dp'
+
+    if (voterPublicKey != auditor1open && voterPublicKey != factory1open )
+    then
+        false
+    else
+        true
+
+}
+
+func isAuditor(voterPublicKey: ByteVector) = {
+
+let auditor1open = base58'6B7r4pWd3dB79ojogTFvQ2tspsav6gsL4iWqzsRG2rhR'
+
+    if (voterPublicKey != auditor1open)
+    then
+        false
+    else
+        true
+
+}
+
+@Callable(i)
+func sign(theVote: Int) = {
+
+    if (!signerIsAllowedToSign(i.callerPublicKey))
+    then
+        throw("У вас нет прав доступа")
+    else
+        let dataFromStorage = this.getInteger(i.callerPublicKey.toBase58String())
+
+        let getAuditor = this.getStringValue("Auditor")
+        let getFactory = this.getStringValue("Factory")
+
+
+        if (dataFromStorage.isDefined())
+        then
+            throw("Ваша подпись уже поставлена")
+        else
+            WriteSet([DataEntry(i.callerPublicKey.toBase58String(), theVote)])
+            
+}
+
+
+
+@Callable(i)
+func record(theInteger: Int) = {
+
+let auditor1open = base58'6B7r4pWd3dB79ojogTFvQ2tspsav6gsL4iWqzsRG2rhR'
+
+let factory1open = base58'BGr3aRnHxWYKViZ9AKkqE7CdczJtRGk2vCzbGF5mX7dp'
+
+### Master open key
+#let myOpen = base58'FUCE44aWkQuFEKpfWRe3zoW8pGN2caDm1vqoK55FTnLP'
+
+let myOpen = base58'FUCE44aWkQuFEKpfWRe3zoW8pGN2caDm1vqoK55FTnLP'
+
+    if (i.callerPublicKey != myOpen)
+    then
+        throw("Вы не можете добавлять данные, вы не заказчик")
+    else
+        WriteSet([DataEntry("auditor", auditor1open), DataEntry("factory", factory1open)])
+}
